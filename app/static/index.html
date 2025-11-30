@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BI-GPT — Визуальный старт</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            min-height: 100vh;
+        }
+        .hero {
+            padding: 60px 0;
+            text-align: center;
+        }
+        .hero-title {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .hero-desc {
+            font-size: 1.3rem;
+            color: #34495e;
+            margin-bottom: 30px;
+        }
+        .btn-main {
+            font-size: 1.2rem;
+            padding: 12px 32px;
+        }
+        .features {
+            margin-top: 40px;
+        }
+        .feature {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container hero">
+        <div class="hero-title">BI-GPT</div>
+        <div class="hero-desc">Агент для перевода естественных вопросов в безопасные SQL-запросы с бизнес-логикой</div>
+        <a href="/docs" class="btn btn-primary btn-main me-2">API Документация</a>
+        <a href="/static/tests.html" class="btn btn-outline-secondary btn-main">Тесты</a>
+    </div>
+
+    <!-- About Section -->
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="feature">
+                    <h4>О проекте</h4>
+                    <p>BI-GPT — это современный агент, который переводит вопросы на естественном языке в безопасные SQL-запросы с учетом бизнес-логики и терминов. Поддерживает русский, казахский и английский языки, обеспечивает защиту данных и аудит операций.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Query Form -->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="feature">
+                    <h4>Попробуйте задать вопрос</h4>
+                    <form id="queryForm">
+                        <div class="mb-3">
+                            <input type="text" class="form-control" id="questionInput" placeholder="Например: Прибыль за последние 2 дня" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Отправить</button>
+                    </form>
+                    <div id="queryResult" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container features">
+        <div class="row">
+            <div class="col-md-4 feature">
+                <h5>Понимание естественного языка</h5>
+                <p>Вопросы на русском, казахском и английском языках.</p>
+            </div>
+            <div class="col-md-4 feature">
+                <h5>Безопасность и аудит</h5>
+                <p>Блокировка опасных операций, защита PII, логирование.</p>
+            </div>
+            <div class="col-md-4 feature">
+                <h5>Мониторинг и метрики</h5>
+                <p>API для метрик, мониторинг качества и производительности.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contacts Section -->
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="feature">
+                    <h4>Ссылки</h4>
+                    <ul class="list-unstyled">
+                        <li><strong>Документация:</strong> <a href="/docs">Swagger UI</a></li>
+                        <li><strong>GitHub:</strong> <a href="https://github.com/almiraiskakova638-dot/BI-GPT.git">Ссылка на репозиторий</a></li>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center mt-5 mb-3 text-muted">
+        &copy; 2025 BI-GPT. Все права защищены.
+    </footer>
+
+    <script>
+        document.getElementById('queryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const question = document.getElementById('questionInput').value;
+            const resultDiv = document.getElementById('queryResult');
+            resultDiv.innerHTML = '<span class="text-secondary">Отправка запроса...</span>';
+            try {
+                const response = await fetch('/api/v1/query/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question, user_id: 'demo', user_role: 'manager' })
+                });
+                const data = await response.json();
+                if (data.result && data.result.sql_query) {
+                    resultDiv.innerHTML = `<div class="alert alert-success"><strong>SQL:</strong><br><pre>${data.result.sql_query}</pre></div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="alert alert-warning">${data.status || 'Нет результата'}</div>`;
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<div class="alert alert-danger">Ошибка запроса</div>`;
+            }
+        });
+    </script>
+</body>
+</html>

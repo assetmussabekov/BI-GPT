@@ -1,0 +1,22 @@
+[
+  {
+    "question": "Прибыль за последние 2 дня для всех магазинов",
+    "sql": "SELECT DATE(s.order_date) AS day, SUM(s.revenue - s.cogs) AS gross_profit FROM sales s WHERE s.order_date >= current_date - INTERVAL '2 day' AND s.order_date < current_date GROUP BY DATE(s.order_date) ORDER BY day;",
+    "explanation": "Использована таблица sales. Прибыль = revenue - cogs. Период: последние 2 календарных дня."
+  },
+  {
+    "question": "Маржинальность за июль 2024 по регионам",
+    "sql": "SELECT st.region, SUM(s.revenue - s.cogs) / NULLIF(SUM(s.revenue), 0) * 100 AS gross_margin_pct FROM sales s JOIN stores st ON s.store_id = st.store_id WHERE s.order_date >= '2024-07-01' AND s.order_date < '2024-08-01' GROUP BY st.region ORDER BY gross_margin_pct DESC;",
+    "explanation": "Маржинальность = (revenue - cogs)/revenue * 100; NULLIF для избежания деления на ноль."
+  },
+  {
+    "question": "Выручка за прошлый месяц",
+    "sql": "SELECT SUM(revenue) AS total_revenue FROM sales WHERE order_date >= date_trunc('month', current_date - interval '1 month') AND order_date < date_trunc('month', current_date);",
+    "explanation": "Суммируется выручка за прошлый месяц."
+  },
+  {
+    "question": "Топ 10 товаров по выручке за текущий месяц",
+    "sql": "SELECT p.sku, p.name, SUM(s.revenue) AS total_revenue FROM sales s JOIN products p ON s.product_id = p.product_id WHERE s.order_date >= date_trunc('month', current_date) AND s.order_date < date_trunc('month', current_date) + interval '1 month' GROUP BY p.sku, p.name ORDER BY total_revenue DESC LIMIT 10;",
+    "explanation": "Топ товаров по выручке за текущий месяц."
+  }
+]

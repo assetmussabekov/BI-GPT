@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BI-GPT — Тесты</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            min-height: 100vh;
+        }
+        .test-header {
+            text-align: center;
+            margin-top: 40px;
+        }
+        .test-list {
+            margin-top: 30px;
+        }
+        .test-item {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .run-btn {
+            float: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-header">
+            <h2>Тесты BI-GPT</h2>
+            <p>Проверьте основные функции и безопасность вашего агента</p>
+            <a href="/" class="btn btn-outline-primary">На главную</a>
+        </div>
+        <div class="test-list">
+            <div class="test-item">
+                <h5>Тест бизнес-терминов</h5>
+                <p>Проверка правильности генерации SQL для терминов: маржа, выручка, средний чек и др.</p>
+                <button class="btn btn-success run-btn" onclick="runTest('business')">Запустить</button>
+                <div id="result-business" class="mt-2"></div>
+            </div>
+            <div class="test-item">
+                <h5>Тест безопасности</h5>
+                <p>Проверка блокировки опасных операций и защиты PII-данных.</p>
+                <button class="btn btn-success run-btn" onclick="runTest('security')">Запустить</button>
+                <div id="result-security" class="mt-2"></div>
+            </div>
+            <div class="test-item">
+                <h5>Тест API</h5>
+                <p>Проверка доступности и корректности работы основных эндпоинтов.</p>
+                <button class="btn btn-success run-btn" onclick="runTest('api')">Запустить</button>
+                <div id="result-api" class="mt-2"></div>
+            </div>
+        </div>
+    </div>
+    <footer class="text-center mt-5 mb-3 text-muted">
+        &copy; 2025 BI-GPT. Все права защищены.
+    </footer>
+    <script>
+        async function runTest(type) {
+            let resultId = 'result-' + type;
+            document.getElementById(resultId).innerHTML = '<span class="text-secondary">Выполнение теста...</span>';
+            try {
+                const response = await fetch(`/api/v1/test/${type}`);
+                const data = await response.json();
+                if (data.result) {
+                    document.getElementById(resultId).innerHTML = `<span class="text-success">${data.result}</span>`;
+                } else {
+                    document.getElementById(resultId).innerHTML = `<span class="text-warning">Нет результата</span>`;
+                }
+            } catch (err) {
+                document.getElementById(resultId).innerHTML = `<span class="text-danger">Ошибка выполнения теста</span>`;
+            }
+        }
+    </script>
+</body>
+</html>

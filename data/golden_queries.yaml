@@ -1,0 +1,280 @@
+# Golden Queries for BI-GPT Testing
+# Version: 1.0
+# Last updated: 2024-01-01
+
+version: "1.0"
+last_updated: "2024-01-01"
+
+queries:
+  # Basic financial metrics
+  - id: "gross_profit_daily"
+    category: "financial"
+    difficulty: "easy"
+    natural_language: "Прибыль за последние 2 дня для всех магазинов"
+    expected_sql: |
+      SELECT 
+        DATE(s.order_date) AS day,
+        SUM(s.revenue - s.cogs) AS gross_profit
+      FROM sales s
+      WHERE s.order_date >= current_date - INTERVAL '2 day'
+        AND s.order_date < current_date
+      GROUP BY DATE(s.order_date)
+      ORDER BY day;
+    expected_columns: ["day", "gross_profit"]
+    business_terms: ["gross_profit"]
+    tables_used: ["sales"]
+    description: "Basic gross profit calculation for recent days"
+
+  - id: "gross_margin_regional"
+    category: "financial"
+    difficulty: "medium"
+    natural_language: "Маржинальность за июль 2024 по регионам"
+    expected_sql: |
+      SELECT 
+        st.region,
+        SUM(s.revenue - s.cogs) / NULLIF(SUM(s.revenue), 0) * 100 AS gross_margin_pct
+      FROM sales s
+      JOIN stores st ON s.store_id = st.store_id
+      WHERE s.order_date >= '2024-07-01' 
+        AND s.order_date < '2024-08-01'
+      GROUP BY st.region
+      ORDER BY gross_margin_pct DESC;
+    expected_columns: ["region", "gross_margin_pct"]
+    business_terms: ["gross_margin", "region"]
+    tables_used: ["sales", "stores"]
+    description: "Gross margin calculation by region for specific month"
+
+  - id: "revenue_monthly"
+    category: "financial"
+    difficulty: "easy"
+    natural_language: "Выручка за прошлый месяц"
+    expected_sql: |
+      SELECT 
+        SUM(revenue) AS total_revenue
+      FROM sales
+      WHERE order_date >= date_trunc('month', current_date - interval '1 month')
+        AND order_date < date_trunc('month', current_date);
+    expected_columns: ["total_revenue"]
+    business_terms: ["revenue", "last_month"]
+    tables_used: ["sales"]
+    description: "Total revenue for previous month"
+
+  - id: "average_check_daily"
+    category: "financial"
+    difficulty: "medium"
+    natural_language: "Средний чек по дням за последнюю неделю"
+    expected_sql: |
+      SELECT 
+        DATE(order_date) AS day,
+        AVG(order_total) AS average_check
+      FROM orders
+      WHERE order_date >= current_date - INTERVAL '7 day'
+        AND order_date < current_date
+      GROUP BY DATE(order_date)
+      ORDER BY day;
+    expected_columns: ["day", "average_check"]
+    business_terms: ["average_check"]
+    tables_used: ["orders"]
+    description: "Daily average check for last week"
+
+  # Product metrics
+  - id: "top_products_revenue"
+    category: "product"
+    difficulty: "medium"
+    natural_language: "Топ 10 товаров по выручке за текущий месяц"
+    expected_sql: |
+      SELECT 
+        p.sku,
+        p.name,
+        SUM(s.revenue) AS total_revenue
+      FROM sales s
+      JOIN products p ON s.product_id = p.product_id
+      WHERE s.order_date >= date_trunc('month', current_date)
+        AND s.order_date < date_trunc('month', current_date) + interval '1 month'
+      GROUP BY p.sku, p.name
+      ORDER BY total_revenue DESC
+      LIMIT 10;
+    expected_columns: ["sku", "name", "total_revenue"]
+    business_terms: ["revenue", "sku", "current_month"]
+    tables_used: ["sales", "products"]
+    description: "Top products by revenue for current month"
+
+  - id: "category_performance"
+    category: "product"
+    difficulty: "medium"
+    natural_language: "Производительность по категориям товаров за квартал"
+    expected_sql: |
+      SELECT 
+        p.category,
+        COUNT(DISTINCT s.order_id) AS order_count,
+        SUM(s.revenue) AS total_revenue,
+        AVG(s.revenue) AS avg_revenue_per_order
+      FROM sales s
+      JOIN products p ON s.product_id = p.product_id
+      WHERE s.order_date >= date_trunc('quarter', current_date)
+        AND s.order_date < date_trunc('quarter', current_date) + interval '3 months'
+      GROUP BY p.category
+      ORDER BY total_revenue DESC;
+    expected_columns: ["category", "order_count", "total_revenue", "avg_revenue_per_order"]
+    business_terms: ["product_category", "revenue"]
+    tables_used: ["sales", "products"]
+    description: "Category performance metrics for current quarter"
+
+  # Location metrics
+  - id: "store_revenue_ranking"
+    category: "location"
+    difficulty: "easy"
+    natural_language: "Рейтинг магазинов по выручке"
+    expected_sql: |
+      SELECT 
+        st.store_id,
+        st.name,
+        st.city,
+        SUM(s.revenue) AS total_revenue
+      FROM sales s
+      JOIN stores st ON s.store_id = st.store_id
+      GROUP BY st.store_id, st.name, st.city
+      ORDER BY total_revenue DESC;
+    expected_columns: ["store_id", "name", "city", "total_revenue"]
+    business_terms: ["store", "revenue"]
+    tables_used: ["sales", "stores"]
+    description: "Store ranking by total revenue"
+
+  - id: "regional_comparison"
+    category: "location"
+    difficulty: "medium"
+    natural_language: "Сравнение регионов по количеству продаж и выручке"
+    expected_sql: |
+      SELECT 
+        st.region,
+        COUNT(DISTINCT s.order_id) AS sales_count,
+        SUM(s.revenue) AS total_revenue,
+        COUNT(DISTINCT s.customer_id) AS unique_customers
+      FROM sales s
+      JOIN stores st ON s.store_id = st.store_id
+      GROUP BY st.region
+      ORDER BY total_revenue DESC;
+    expected_columns: ["region", "sales_count", "total_revenue", "unique_customers"]
+    business_terms: ["region", "revenue", "sales_volume", "customer_count"]
+    tables_used: ["sales", "stores"]
+    description: "Regional comparison of sales metrics"
+
+  # Customer metrics
+  - id: "customer_activity"
+    category: "customer"
+    difficulty: "medium"
+    natural_language: "Активность клиентов по дням за последний месяц"
+    expected_sql: |
+      SELECT 
+        DATE(order_date) AS day,
+        COUNT(DISTINCT customer_id) AS unique_customers,
+        COUNT(*) AS total_orders
+      FROM orders
+      WHERE order_date >= current_date - INTERVAL '30 day'
+        AND order_date < current_date
+      GROUP BY DATE(order_date)
+      ORDER BY day;
+    expected_columns: ["day", "unique_customers", "total_orders"]
+    business_terms: ["customer_count"]
+    tables_used: ["orders"]
+    description: "Daily customer activity for last month"
+
+  - id: "conversion_rate_analysis"
+    category: "sales"
+    difficulty: "hard"
+    natural_language: "Анализ конверсии заказов по статусам за неделю"
+    expected_sql: |
+      SELECT 
+        status,
+        COUNT(*) AS order_count,
+        (COUNT(*) * 100.0 / SUM(COUNT(*)) OVER()) AS conversion_rate
+      FROM orders
+      WHERE order_date >= current_date - INTERVAL '7 day'
+        AND order_date < current_date
+      GROUP BY status
+      ORDER BY order_count DESC;
+    expected_columns: ["status", "order_count", "conversion_rate"]
+    business_terms: ["conversion_rate"]
+    tables_used: ["orders"]
+    description: "Order conversion rate analysis by status"
+
+  # Time-based analytics
+  - id: "weekly_trends"
+    category: "time"
+    difficulty: "medium"
+    natural_language: "Тренды продаж по неделям за последние 3 месяца"
+    expected_sql: |
+      SELECT 
+        date_trunc('week', order_date) AS week,
+        COUNT(DISTINCT order_id) AS order_count,
+        SUM(revenue) AS weekly_revenue,
+        AVG(revenue) AS avg_order_value
+      FROM sales
+      WHERE order_date >= current_date - INTERVAL '3 months'
+        AND order_date < current_date
+      GROUP BY date_trunc('week', order_date)
+      ORDER BY week;
+    expected_columns: ["week", "order_count", "weekly_revenue", "avg_order_value"]
+    business_terms: ["revenue", "sales_volume"]
+    tables_used: ["sales"]
+    description: "Weekly sales trends for last 3 months"
+
+  # Complex analytical queries
+  - id: "profitability_analysis"
+    category: "financial"
+    difficulty: "hard"
+    natural_language: "Анализ прибыльности по товарам и регионам"
+    expected_sql: |
+      SELECT 
+        p.category,
+        st.region,
+        COUNT(DISTINCT s.order_id) AS order_count,
+        SUM(s.revenue) AS total_revenue,
+        SUM(s.cogs) AS total_cogs,
+        SUM(s.revenue - s.cogs) AS gross_profit,
+        (SUM(s.revenue - s.cogs) / NULLIF(SUM(s.revenue), 0)) * 100 AS margin_pct
+      FROM sales s
+      JOIN products p ON s.product_id = p.product_id
+      JOIN stores st ON s.store_id = st.store_id
+      GROUP BY p.category, st.region
+      HAVING SUM(s.revenue) > 0
+      ORDER BY margin_pct DESC;
+    expected_columns: ["category", "region", "order_count", "total_revenue", "total_cogs", "gross_profit", "margin_pct"]
+    business_terms: ["gross_profit", "gross_margin", "product_category", "region"]
+    tables_used: ["sales", "products", "stores"]
+    description: "Complex profitability analysis by product category and region"
+
+# Test scenarios
+test_scenarios:
+  - name: "Basic Financial Metrics"
+    queries: ["gross_profit_daily", "revenue_monthly", "average_check_daily"]
+    description: "Test basic financial calculations"
+
+  - name: "Product Analytics"
+    queries: ["top_products_revenue", "category_performance"]
+    description: "Test product-related queries"
+
+  - name: "Location Analytics"
+    queries: ["store_revenue_ranking", "regional_comparison"]
+    description: "Test location-based analytics"
+
+  - name: "Complex Analytics"
+    queries: ["profitability_analysis", "conversion_rate_analysis"]
+    description: "Test complex multi-table joins and calculations"
+
+# Expected results (for validation)
+expected_results:
+  gross_profit_daily:
+    min_rows: 1
+    max_rows: 3
+    required_columns: ["day", "gross_profit"]
+    data_types:
+      day: "date"
+      gross_profit: "numeric"
+
+  revenue_monthly:
+    min_rows: 1
+    max_rows: 1
+    required_columns: ["total_revenue"]
+    data_types:
+      total_revenue: "numeric"

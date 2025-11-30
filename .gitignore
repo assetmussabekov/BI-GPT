@@ -1,0 +1,50 @@
+# Virtual environment
+venv/
+.venv/
+
+# Python cache / bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Dist
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# VSCode and editor settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables / secrets
+.env
+.env.*
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# PyCharm
+.idea/
+
+# Wheel
+pip-wheel-metadata/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local docker compose override
+docker-compose.override.yml
+
+# Add any other local files to exclude
+*.log

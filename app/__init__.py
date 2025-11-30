@@ -1,0 +1,1 @@
+"""BI-GPT application package."""

@@ -1,0 +1,288 @@
+# Business Glossary for BI-GPT
+# Version: 1.0
+# Last updated: 2024-01-01
+
+version: "1.0"
+last_updated: "2024-01-01"
+
+terms:
+  # Financial metrics
+  gross_margin:
+    canonical_name: "gross_margin"
+    synonyms: ["маржа", "маржинальность", "валовая маржа", "gross margin"]
+    expression: "((revenue - cogs) / revenue) * 100"
+    description: "Валовая маржа в процентах"
+    required_tables: ["sales", "products"]
+    default_grain: "day"
+    owner: "analyst"
+    category: "financial"
+    is_pii: false
+
+  gross_profit:
+    canonical_name: "gross_profit"
+    synonyms: ["валовая прибыль", "gross profit", "прибыль"]
+    expression: "(revenue - cogs)"
+    description: "Валовая прибыль в денежном выражении"
+    required_tables: ["sales"]
+    default_grain: "day"
+    owner: "analyst"
+    category: "financial"
+    is_pii: false
+
+  revenue:
+    canonical_name: "revenue"
+    synonyms: ["выручка", "доход", "revenue", "sales"]
+    expression: "SUM(sales.revenue)"
+    description: "Общая выручка"
+    required_tables: ["sales"]
+    default_grain: "day"
+    owner: "analyst"
+    category: "financial"
+    is_pii: false
+
+  average_check:
+    canonical_name: "average_check"
+    synonyms: ["средний чек", "average check", "средний размер покупки"]
+    expression: "AVG(order_total)"
+    description: "Средний размер покупки"
+    required_tables: ["orders"]
+    default_grain: "day"
+    owner: "analyst"
+    category: "financial"
+    is_pii: false
+
+  # Time periods
+  last_week:
+    canonical_name: "last_week"
+    synonyms: ["прошлая неделя", "last week", "предыдущая неделя"]
+    expression: "date_trunc('week', current_date - interval '1 week')"
+    description: "Прошлая неделя (понедельник-воскресенье)"
+    required_tables: []
+    default_grain: "week"
+    owner: "analyst"
+    category: "time"
+    is_pii: false
+
+  last_month:
+    canonical_name: "last_month"
+    synonyms: ["прошлый месяц", "last month", "предыдущий месяц"]
+    expression: "date_trunc('month', current_date - interval '1 month')"
+    description: "Прошлый месяц"
+    required_tables: []
+    default_grain: "month"
+    owner: "analyst"
+    category: "time"
+    is_pii: false
+
+  current_month:
+    canonical_name: "current_month"
+    synonyms: ["текущий месяц", "current month", "этот месяц"]
+    expression: "date_trunc('month', current_date)"
+    description: "Текущий месяц"
+    required_tables: []
+    default_grain: "month"
+    owner: "analyst"
+    category: "time"
+    is_pii: false
+
+  # Product metrics
+  sku:
+    canonical_name: "sku"
+    synonyms: ["SKU", "артикул", "товар", "product"]
+    expression: "products.sku"
+    description: "Артикул товара"
+    required_tables: ["products"]
+    default_grain: "item"
+    owner: "analyst"
+    category: "product"
+    is_pii: false
+
+  product_category:
+    canonical_name: "product_category"
+    synonyms: ["категория товара", "category", "категория"]
+    expression: "products.category"
+    description: "Категория товара"
+    required_tables: ["products"]
+    default_grain: "category"
+    owner: "analyst"
+    category: "product"
+    is_pii: false
+
+  # Location metrics
+  store:
+    canonical_name: "store"
+    synonyms: ["магазин", "store", "точка продаж", "филиал"]
+    expression: "stores.store_id"
+    description: "Идентификатор магазина"
+    required_tables: ["stores"]
+    default_grain: "store"
+    owner: "analyst"
+    category: "location"
+    is_pii: false
+
+  region:
+    canonical_name: "region"
+    synonyms: ["регион", "region", "область", "территория"]
+    expression: "stores.region"
+    description: "Регион магазина"
+    required_tables: ["stores"]
+    default_grain: "region"
+    owner: "analyst"
+    category: "location"
+    is_pii: false
+
+  city:
+    canonical_name: "city"
+    synonyms: ["город", "city", "населенный пункт"]
+    expression: "stores.city"
+    description: "Город магазина"
+    required_tables: ["stores"]
+    default_grain: "city"
+    owner: "analyst"
+    category: "location"
+    is_pii: false
+
+  # Customer metrics
+  customer_count:
+    canonical_name: "customer_count"
+    synonyms: ["количество клиентов", "customer count", "число покупателей"]
+    expression: "COUNT(DISTINCT customer_id)"
+    description: "Количество уникальных клиентов"
+    required_tables: ["orders"]
+    default_grain: "day"
+    owner: "analyst"
+    category: "customer"
+    is_pii: false
+
+  # Sales metrics
+  sales_volume:
+    canonical_name: "sales_volume"
+    synonyms: ["объем продаж", "sales volume", "количество продаж"]
+    expression: "COUNT(*)"
+    description: "Количество продаж"
+    required_tables: ["sales"]
+    default_grain: "day"
+    owner: "analyst"
+    category: "sales"
+    is_pii: false
+
+  conversion_rate:
+    canonical_name: "conversion_rate"
+    synonyms: ["конверсия", "conversion rate", "коэффициент конверсии"]
+    expression: "(COUNT(DISTINCT CASE WHEN status = 'completed' THEN order_id END) / COUNT(DISTINCT order_id)) * 100"
+    description: "Процент конверсии заказов"
+    required_tables: ["orders"]
+    default_grain: "day"
+    owner: "analyst"
+    category: "sales"
+    is_pii: false
+
+# Table mappings
+table_mappings:
+  sales:
+    description: "Таблица продаж"
+    columns:
+      - name: "order_id"
+        type: "integer"
+        description: "Идентификатор заказа"
+        is_pii: false
+      - name: "product_id"
+        type: "integer"
+        description: "Идентификатор товара"
+        is_pii: false
+      - name: "customer_id"
+        type: "integer"
+        description: "Идентификатор клиента"
+        is_pii: true
+      - name: "store_id"
+        type: "integer"
+        description: "Идентификатор магазина"
+        is_pii: false
+      - name: "order_date"
+        type: "date"
+        description: "Дата заказа"
+        is_pii: false
+      - name: "revenue"
+        type: "decimal"
+        description: "Выручка"
+        is_pii: false
+      - name: "cogs"
+        type: "decimal"
+        description: "Себестоимость"
+        is_pii: false
+      - name: "quantity"
+        type: "integer"
+        description: "Количество"
+        is_pii: false
+
+  products:
+    description: "Справочник товаров"
+    columns:
+      - name: "product_id"
+        type: "integer"
+        description: "Идентификатор товара"
+        is_pii: false
+      - name: "sku"
+        type: "varchar"
+        description: "Артикул товара"
+        is_pii: false
+      - name: "name"
+        type: "varchar"
+        description: "Название товара"
+        is_pii: false
+      - name: "category"
+        type: "varchar"
+        description: "Категория товара"
+        is_pii: false
+      - name: "price"
+        type: "decimal"
+        description: "Цена товара"
+        is_pii: false
+
+  stores:
+    description: "Справочник магазинов"
+    columns:
+      - name: "store_id"
+        type: "integer"
+        description: "Идентификатор магазина"
+        is_pii: false
+      - name: "name"
+        type: "varchar"
+        description: "Название магазина"
+        is_pii: false
+      - name: "city"
+        type: "varchar"
+        description: "Город"
+        is_pii: false
+      - name: "region"
+        type: "varchar"
+        description: "Регион"
+        is_pii: false
+      - name: "address"
+        type: "varchar"
+        description: "Адрес"
+        is_pii: false
+
+  orders:
+    description: "Таблица заказов"
+    columns:
+      - name: "order_id"
+        type: "integer"
+        description: "Идентификатор заказа"
+        is_pii: false
+      - name: "customer_id"
+        type: "integer"
+        description: "Идентификатор клиента"
+        is_pii: true
+      - name: "order_date"
+        type: "date"
+        description: "Дата заказа"
+        is_pii: false
+      - name: "order_total"
+        type: "decimal"
+        description: "Сумма заказа"
+        is_pii: false
+      - name: "status"
+        type: "varchar"
+        description: "Статус заказа"
+        is_pii: false
